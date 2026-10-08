@@ -1,0 +1,37 @@
+name: Process existing Dependabot PRs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Approve and enable auto-merge for Dependabot PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr list \
+            --repo "$REPO" \
+            --author "app/dependabot" \
+            --state open \
+            --json number \
+            --jq '.[].number' |
+          while read -r PR; do
+            echo "Processing PR #$PR"
+
+            gh pr review "$PR" \
+              --repo "$REPO" \
+              --approve
+
+            gh pr merge "$PR" \
+              --repo "$REPO" \
+              --auto \
+              --squash
+          done
