@@ -32,6 +32,6 @@ jobs:
 
             gh pr merge "$PR" \
               --repo "$REPO" \
-              --auto \
-              --squash
+              --squash \
+              --delete-branch
           done
